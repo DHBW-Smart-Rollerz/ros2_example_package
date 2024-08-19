@@ -1,5 +1,7 @@
 # ROS2 Example Package
 
+[![Build Test](https://github.com/DHBW-Smart-Rollerz/ros2_exaple_package/actions/workflows/build-test.yaml/badge.svg)](https://github.com/DHBW-Smart-Rollerz/ros2_exaple_package/actions/workflows/build-test.yaml)
+
 This repository contains an example package for ros2 (python).
 
 ## Usage
