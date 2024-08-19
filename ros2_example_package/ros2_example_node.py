@@ -16,6 +16,7 @@ class ROS2ExampleNode(rclpy.node.Node):
     """ROS2 Example Node."""
 
     def __init__(self):
+        """Initialize the ROS2ExampleNode."""
         super().__init__("ros2_example_node")
 
         # Get the parameters from the yaml file
@@ -38,7 +39,6 @@ class ROS2ExampleNode(rclpy.node.Node):
 
     def load_ros_params(self):
         """Gets the parameters from the ROS parameter server."""
-
         # All command line arguments from the launch file and parameters from the
         # yaml config file must be declared here with a default value.
         self.declare_parameters(
@@ -82,7 +82,6 @@ class ROS2ExampleNode(rclpy.node.Node):
 
     def init_publisher_and_subscriber(self):
         """Initializes the subscribers and publishers."""
-
         self.image_subscriber = self.create_subscription(
             sensor_msgs.msg.Image, self.image_topic, self.image_callback, 1
         )
@@ -96,20 +95,12 @@ class ROS2ExampleNode(rclpy.node.Node):
             )
 
     def image_callback(self, msg: sensor_msgs.msg.Image):
-        """
-        This function will be executed by the ROS2 system whenever a
-        new image is received.
-        """
-
+        """Executed by the ROS2 system whenever a new image is received."""
         # Execute the prediction
         self.execute_prediction(msg)
 
     def wait_for_message_and_execute(self):
-        """
-        This function waits for a new message on the image topic and then
-        executes the prediction.
-        """
-
+        """Waits for a new message on the image topic and then executes the prediction."""
         # Wait for a new message on the image topic
         _, msg = rclpy.wait_for_message.wait_for_message(
             sensor_msgs.msg.Image, self, self.image_topic
@@ -120,7 +111,12 @@ class ROS2ExampleNode(rclpy.node.Node):
 
     @timer.Timer(name="total", filter_strength=40)
     def execute_prediction(self, msg: sensor_msgs.msg.Image):
+        """
+        Execute the prediction.
 
+        Arguments:
+            msg -- The image message.
+        """
         with timer.Timer(name="msg_transport", filter_strength=40):
             # The image has to be retrieved from the message
             image = self.cv_bridge.imgmsg_to_cv2(msg, desired_encoding="8UC1")
@@ -152,6 +148,12 @@ class ROS2ExampleNode(rclpy.node.Node):
 
 
 def main(args=None):
+    """
+    Main function to start the ROS2ExampleNode.
+
+    Keyword Arguments:
+        args -- Launch arguments (default: {None})
+    """
     rclpy.init(args=args)
     node = ROS2ExampleNode()
 
