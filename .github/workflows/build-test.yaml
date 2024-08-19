@@ -24,13 +24,6 @@ jobs:
     - name: Install dependencies
       run: sudo apt-get update && sudo apt-get install -y python3-colcon-common-extensions
 
-    - name: Clone Dependencies
-      run: |
-        mkdir -p ~/workspace/src
-        cd ~/workspace/src
-        git clone https://github.com/DHBW-Smart-Rollerz/ros2_exaple_package.git
-        cd ..
-
     - name: Build packages
       run: |
         colcon build --event-handlers console_cohesion+
