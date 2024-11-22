@@ -19,7 +19,7 @@ class ROS2ExampleNode(rclpy.node.Node):
         """Initialize the ROS2ExampleNode."""
         super().__init__("ros2_example_node")
 
-        # Get the parameters from the yaml file
+        # Get the package path
         self.package_share_path = get_package_share_directory("ros2_example_package")
         self.get_logger().info(f"Package Path: {self.package_share_path}")
 

@@ -18,9 +18,7 @@ setup(
         ),
         (
             os.path.join("share", package_name, "config"),
-            glob.glob(
-                os.path.join("config", "*.*")
-            ),  # TODO: Do we want to include all files?
+            glob.glob(os.path.join("config", "*.*")),
         ),
     ],
     install_requires=["setuptools"],
