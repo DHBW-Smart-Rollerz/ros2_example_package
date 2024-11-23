@@ -55,30 +55,16 @@ class ROS2ExampleNode(rclpy.node.Node):
         )
 
         # Get parameters from the ROS parameter server into a local variable
-        self.debug = self.get_parameter("debug").get_parameter_value().bool_value
+        self.debug = self.get_parameter("debug").value
         self.image_path = os.path.join(
             self.package_share_path,
-            self.get_parameter("image_path").get_parameter_value().string_value,
+            self.get_parameter("image_path").value,
         )  # full path to the image
-        self.model_config_path = (
-            self.get_parameter("model_config_path").get_parameter_value().string_value
-        )
-
-        self.image_topic = (
-            self.get_parameter("image_topic").get_parameter_value().string_value
-        )
-
-        self.result_topic = (
-            self.get_parameter("result_topic").get_parameter_value().string_value
-        )
-
-        self.debug_image_topic = (
-            self.get_parameter("debug_image_topic").get_parameter_value().string_value
-        )
-
-        self.example_value = (
-            self.get_parameter("example_value").get_parameter_value().integer_value
-        )
+        self.model_config_path = self.get_parameter("model_config_path").value
+        self.image_topic = self.get_parameter("image_topic").value
+        self.result_topic = self.get_parameter("result_topic").value
+        self.debug_image_topic = self.get_parameter("debug_image_topic").value
+        self.example_value = self.get_parameter("example_value").value
 
     def init_publisher_and_subscriber(self):
         """Initializes the subscribers and publishers."""
