@@ -34,7 +34,7 @@ def generate_launch_description():
             ),
             Node(
                 package="ros2_example_package",
-                namespace="ros2_example",
+                namespace="",  # Is also the namespace for loading the params
                 executable="ros2_example_node",
                 name="ros2_example_node",
                 parameters=[
