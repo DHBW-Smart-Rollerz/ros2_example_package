@@ -1,97 +1,75 @@
-import os
-
 import cv_bridge
 import rclpy
-import rclpy.node
-import rclpy.wait_for_message
 import sensor_msgs.msg
-import std_msgs.msg
-from ament_index_python.packages import get_package_share_directory
+from smarty_utils.enums import NodeState
+from smarty_utils.smarty_node import SmartyNode
 from timing import timer
 
 from ros2_example_package.example_model import model
 
 
-class ROS2ExampleNode(rclpy.node.Node):
+class ROS2ExampleNode(SmartyNode):
     """ROS2 Example Node."""
 
     def __init__(self):
         """Initialize the ROS2ExampleNode."""
-        super().__init__("ros2_example_node")
+        super().__init__(
+            "ros2_example_node",
+            "ros2_example_package",
+            node_parameters={
+                # Subscriber topics
+                "image_subscriber": "/camera/undistorted",
+                # Publisher topics
+                "debug_image_publisher": "/ros2_example_node/debug_image",
+                # Parameters
+                "model_config_path": "config/model.yaml",
+                "state": NodeState.ACTIVE.value,
+                "example_value": 123,
+                "debug": False,
+            },
+            subscribed_topics={
+                "image_subscriber": (
+                    sensor_msgs.msg.Image,
+                    self.image_callback,
+                    1,
+                ),
+            },
+            published_topics={
+                "debug_image_publisher": (sensor_msgs.msg.Image, 1),
+            },
+        )
 
-        # Get the package path
-        self.package_share_path = get_package_share_directory("ros2_example_package")
-        self.get_logger().info(f"Package Path: {self.package_share_path}")
-
-        # Load the parameters from the ROS parameter server and initialize
-        # the publishers and subscribers
-        self.load_ros_params()
-        self.init_publisher_and_subscriber()
+        # Get the parameters from the yaml file
+        self.get_logger().info(f"Package Path: {self.package_path}")
 
         # Create required objects
         self.cv_bridge = cv_bridge.CvBridge()
 
         self.model = model.ExampleModel(
-            root=self.package_share_path, model_config_path=self.model_config_path
+            root=self.package_path, model_config_path=self.model_config_path
         )
 
         self.get_logger().info("ROS2ExampleNode initialized")
 
-    def load_ros_params(self):
-        """Gets the parameters from the ROS parameter server."""
-        # All command line arguments from the launch file and parameters from the
-        # yaml config file must be declared here with a default value.
-        self.declare_parameters(
-            namespace="",
-            parameters=[
-                ("debug", False),
-                ("image_path", "resources/img/example.png"),
-                ("model_config_path", "config/model.yaml"),
-                ("image_topic", "/camera/undistorted"),
-                ("result_topic", "/example/result"),
-                ("debug_image_topic", "/example/debug_image"),
-                ("example_value", 500),
-            ],
-        )
+    @property
+    def model_config_path(self) -> str:
+        """Return the model config path."""
+        return self.get_parameter("model_config_path").value  # type: ignore
 
-        # Get parameters from the ROS parameter server into a local variable
-        self.debug = self.get_parameter("debug").value
-        self.image_path = os.path.join(
-            self.package_share_path,
-            self.get_parameter("image_path").value,
-        )  # full path to the image
-        self.model_config_path = self.get_parameter("model_config_path").value
-        self.image_topic = self.get_parameter("image_topic").value
-        self.result_topic = self.get_parameter("result_topic").value
-        self.debug_image_topic = self.get_parameter("debug_image_topic").value
-        self.example_value = self.get_parameter("example_value").value
+    @property
+    def example_value(self) -> int:
+        """Return an example value for debug image generation."""
+        return self.get_parameter("example_value").value  # type: ignore
 
-    def init_publisher_and_subscriber(self):
-        """Initializes the subscribers and publishers."""
-        self.image_subscriber = self.create_subscription(
-            sensor_msgs.msg.Image, self.image_topic, self.image_callback, 1
+    def _reset(self) -> None:
+        """Reset the node to its initial state."""
+        del self.model
+        self.model = model.ExampleModel(
+            root=self.package_path, model_config_path=self.model_config_path
         )
-        self.result_publisher = self.create_publisher(
-            std_msgs.msg.Float32, self.result_topic, 1
-        )
-
-        if self.debug:
-            self.debug_image_publisher = self.create_publisher(
-                sensor_msgs.msg.Image, self.debug_image_topic, 1
-            )
 
     def image_callback(self, msg: sensor_msgs.msg.Image):
         """Executed by the ROS2 system whenever a new image is received."""
-        # Execute the prediction
-        self.execute_prediction(msg)
-
-    def wait_for_message_and_execute(self):
-        """Waits for a new message on the image topic and then executes the prediction."""
-        # Wait for a new message on the image topic
-        _, msg = rclpy.wait_for_message.wait_for_message(
-            sensor_msgs.msg.Image, self, self.image_topic
-        )
-
         # Execute the prediction
         self.execute_prediction(msg)
 
@@ -113,29 +91,25 @@ class ROS2ExampleNode(rclpy.node.Node):
 
         with timer.Timer(name="publish", filter_strength=40):
             # Publish the result as the custom ROS2 message defined in this package
-            self.result_publisher.publish(
-                std_msgs.msg.Float32(
-                    data=result,
-                )
-            )
+            print(f"Prediction result: {result}")
 
-        if self.debug:
+        if self._debug:
             with timer.Timer(name="debug", filter_strength=40):
                 # Create the debug image. Here it is just the image filled with
                 # the example value.
                 debug_image = image.copy()
                 debug_image.fill(self.example_value)
 
-                self.debug_image_publisher.publish(
+                self.debug_image_publisher.publish(  # type: ignore
                     self.cv_bridge.cv2_to_imgmsg(image, encoding="8UC1")
                 )
 
-        timer.Timer(logger=self.get_logger().info).print()
+        timer.Timer(logger=self.get_logger().info).print()  # type: ignore
 
 
 def main(args=None):
     """
-    Main function to start the ROS2ExampleNode.
+    Main function to start the LaneDetectionNode.
 
     Keyword Arguments:
         args -- Launch arguments (default: {None})
@@ -158,7 +132,6 @@ def main(args=None):
         use_wait_for_message = True
         if use_wait_for_message:
             while rclpy.ok():
-                node.wait_for_message_and_execute()
                 rclpy.spin_once(node)
         else:
             rclpy.spin(node)
