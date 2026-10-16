@@ -1,12 +1,14 @@
 # ROS2 Example Package
 
-[![Build Test](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/build-test.yaml/badge.svg)](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/build-test.yaml)
+[![Build](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/build.yaml/badge.svg)](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/build.yaml) [![Test](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/test.yaml/badge.svg)](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/test.yaml) [![Lint](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/lint.yaml/badge.svg)](https://github.com/DHBW-Smart-Rollerz/ros2_example_package/actions/workflows/lint.yaml)
 
 This repository contains an example package for ros2 (python).
 
 ## Usage
 
 This repository can be used as template. Simply select this repo when creating a new repository under template.
+
+After creating a repository from the template, rename `ros2_example_package` to your package name (folder, `resource/` file, `package.xml`, `setup.py`, `setup.cfg`) and set `package_name` in `.github/workflows/build.yaml` and `.github/workflows/test.yaml` to it as well. Otherwise the CI builds and tests the wrong package. Also replace `ros2_example_package` in the badge links at the top of this README.
 
 Alternatively, you can create python ros packages with:
 
@@ -25,6 +27,10 @@ colcon build --symlink-install --packages-select my_package
 
 ## Structure
 
+- `.github/workflows/`: CI pipelines, which call the shared workflows of the [smarty_workspace](https://github.com/DHBW-Smart-Rollerz/smarty_workspace/tree/jazzy/.github/workflows):
+  - `build.yaml`: Builds the package
+  - `test.yaml`: Runs the tests of the package
+  - `lint.yaml`: Checks the code with ruff (Python) and ament_uncrustify (C++)
 - `config/`: All configurations (most of the time yaml files)
 - `launch/`: Contains all launch files. Launch files can start multiple nodes with yaml-configurations
 - `models/`: Contains all models (optional) and only necessary for machine learning nodes
